@@ -1,0 +1,29 @@
+{
+  "name": "nodejs-pro-bang",
+  "version": "1.0.0",
+  "description": "nodejs pro",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NNBang24/Nodejs_ts.git"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mysql"
+  ],
+  "author": {
+    "name": "bang"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NNBang24/Nodejs_ts/issues"
+  },
+  "homepage": "https://github.com/NNBang24/Nodejs_ts#readme",
+  "dependencies": {
+    "express": "5.0.1"
+  }
+}
