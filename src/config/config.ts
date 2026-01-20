@@ -5,7 +5,7 @@ const getConnection = async() => {
         port : 3306 ,
         host : 'localhost' ,
         user : 'root' ,
-        database : 'nodejs_sql' ,
+        database : 'nodejs_shopping' ,
         password : 'NHATBANG24112003@'
     })
     // console.log('ket noi database thanh cong')

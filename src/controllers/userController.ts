@@ -9,7 +9,6 @@ const getHomePage = async (req: Request, res: Response) => {
         users: users
     });
 }
-
 const getCreateUserPage = async (req: Request, res: Response) => {
 
     return res.render("createUser.ejs");
