@@ -2,6 +2,7 @@ import express from "express";
 import 'dotenv/config';
 import webRouters from "./routers/web";
 import getConnection from "./config/config";
+import initDatabase from "./config/seed";
 const app = express();
 const PORT = process.env.PORT || 1080;
 
@@ -17,7 +18,8 @@ app.use(express.static('public'))
 // config routers
 webRouters(app);
 
-getConnection() ;
+// seeding data 
+initDatabase()
 
 app.listen(PORT, () => {
   console.log(`lang nghe tai ssss http://localhost:${PORT}`)
