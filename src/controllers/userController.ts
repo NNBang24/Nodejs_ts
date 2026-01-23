@@ -11,7 +11,7 @@ const getHomePage = async (req: Request, res: Response) => {
 }
 const getCreateUserPage = async (req: Request, res: Response) => {
 
-    return res.render("createUser.ejs");
+    return res.render("admin/user/create.ejs");
 }
 const postCreateUserPage = async (req: Request, res: Response) => {
     // console.log("check data : " , req.body  )
