@@ -54,4 +54,11 @@ const getALlUsers = async () => {
 
 
 }
-export { handleCreateUser, getALlUsers, handleDeleteUser ,getUserById ,handleUpdateUserById }
+const getALlRoles = async () => {
+    const role = await prisma.role.findMany();
+    return role ;
+
+
+}
+
+export { handleCreateUser, getALlUsers, handleDeleteUser ,getUserById ,handleUpdateUserById  ,getALlRoles}

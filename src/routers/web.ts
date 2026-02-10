@@ -33,6 +33,9 @@ const webRouters = (app:Express) => {
     router.get('/admin/create-user',
         getCreateUserPage
     );
+    router.post('/admin/post-create-user',
+        postCreateUserPage
+    );
     router.get('/admin/product', getAdminProductPage)
     router.get('/admin/order', getAdminOrderPage)
 
