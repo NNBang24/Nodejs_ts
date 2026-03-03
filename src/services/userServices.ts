@@ -1,10 +1,11 @@
-import getConnection from "../config/config";
+
 
 
 import {prisma} from "../config/client"
 import { postUpdateUser } from "src/controllers/userController";
+import { ACCOUNT_TYPE } from "src/config/constant";
 
-const handleCreateUser = async (fullName: string, email: string, address: string ) => {
+const handleCreateUser = async (fullName: string, email: string, address: string , phone: string , avatar : string ) => {
     //insert in to database 
 
  
@@ -14,8 +15,10 @@ const handleCreateUser = async (fullName: string, email: string, address: string
             fullName : fullName ,
             username : email ,
             address : address ,
-            password : '' ,
-            accountType : ""
+            password : "123456" ,
+            accountType :ACCOUNT_TYPE.SYSTEM ,
+            avatar  :avatar ,
+            phone : phone
         }
     })
     return newUser
