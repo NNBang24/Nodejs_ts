@@ -3,13 +3,9 @@ import { getALlUsers, handleCreateUser, handleDeleteUser, getUserById, handleUpd
 import { access } from "fs";
 
 const getHomePage = async (req: Request, res: Response) => {
-    try {
-        const users = await getALlUsers();
-        return res.render("home.ejs", { users });
-    } catch (error) {
-        console.log(error);
-        return res.status(500).send("Server error");
-    }
+    
+        return res.render("client/home/show.ejs");
+    
 };
 
 const getCreateUserPage = async (req: Request, res: Response) => {
