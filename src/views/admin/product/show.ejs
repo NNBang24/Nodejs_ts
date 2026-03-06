@@ -42,7 +42,38 @@
                                             <th>FACTORY</th>
                                             <th>ACTION</th>
                                         </thead>
+                                        <tbody>
+                                            <% products.forEach( function ( product) { %>
+                                                <tr>
+                                                    <td>
+                                                        <%= product.id %>
+                                                    </td>
+                                                    <td>
+                                                        <%= product.name %>
+                                                    </td>
+                                                    <td>
+                                                        <%= product.price.toLocaleString('vi-VN') %>
+                                                    </td>
+                                                    <td>
+                                                        <%= product.factory %>
+                                                    </td>
+                                                    
+                                                    <td>
+                                                        <div style="display: flex;gap: 20px;">
+                                                            <form action="/admin/view-product/<%= product.id %>" method="get">
+                                                                <button type="submit" class="btn btn-warning"> VIEW</button>
+                                                            </form>
+                                                            <form action="/admin/delete-product/<%= product.id %>" method="post">
+                                                                <button type="submit" class="btn btn-danger"> DELETE
+                                                                </button>
+                                                            </form>
                                         
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>

@@ -1,6 +1,7 @@
 import {z} from "zod" ;
 
 export const ProductSchema = z.object({
+    id: z.string().optional() ,
     name : z.string().trim().min(1,{message :"Ten khong duoc bo trong"}) ,
     price: z.string().transform((val) => (val === '' ? 0 : Number(val))).refine((num) => num > 0 ,{message : "So tien toi thieu la 1"}) ,
     detailDesc: z.string().trim().min(1, { message: "detailDesc khong duoc bo trong" }),
