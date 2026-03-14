@@ -4,6 +4,7 @@ import { getDashboardPage, getAdminUserPage, getAdminProductPage, getAdminOrderP
 import fileUpLoadMiddleware from 'src/middleware/multer';
 import { getProductPage } from 'src/controllers/client/productController';
 import { getAminCreateProductPage ,getViewProduct,postAminCreateProduct, postDeleteProduct, postUpdateProduct } from 'src/controllers/admin/productController';
+import { getLoginPage, getRegisterPage } from 'src/controllers/client/authController';
 
 const router = express.Router();
 const webRouters = (app: Express) => {
@@ -13,6 +14,8 @@ const webRouters = (app: Express) => {
     router.get('/product/:id' ,
         getProductPage
     )
+    router.get('/login' ,getLoginPage) ;
+    router.get('/register' , getRegisterPage ) ;
     // admin router 
     router.get('/admin', getDashboardPage)
     router.get('/admin/user', getAdminUserPage)
