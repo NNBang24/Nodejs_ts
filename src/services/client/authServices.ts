@@ -1,0 +1,44 @@
+import { prisma } from "src/config/client"
+import { hashPassword } from "../userServices"
+import { ACCOUNT_TYPE } from "src/config/constant"
+
+const isEmailExist = async (email: string) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            username: email
+        }
+    })
+    if(user) {
+        return true
+    }
+    return false 
+}
+const registerNewUser = async (
+    fullname: string,
+    email: string,
+    password: string
+) => {
+    const newPassword = await hashPassword(password);
+    const userRole = await prisma.role.findUnique({
+        where: {
+            name: "USER"
+        }
+    })
+    if (userRole) {
+        await prisma.user.create({
+            data: {
+                username: email,
+                password: newPassword,
+                fullName: fullname,
+                accountType: ACCOUNT_TYPE.SYSTEM,
+                roleId: userRole.id
+            }
+        })
+    }
+    else {
+        throw new Error("User Role khong ton tai ");
+    }
+}
+export {
+    isEmailExist, registerNewUser
+}
