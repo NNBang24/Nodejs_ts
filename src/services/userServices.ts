@@ -11,7 +11,9 @@ const saltRounds = 10;
 const hashPassword = async (passwordPlainText: string) => {
     return await bcrypt.hash(passwordPlainText, saltRounds)
 }
-
+const comparePassword = async (passwordPlainText: string ,hashPassword : string) => {
+    return await bcrypt.compare(passwordPlainText ,hashPassword)
+}
 const handleCreateUser = async (fullName: string, email: string, address: string, phone: string, avatar: string, role: string) => {
     //insert in to database 
     const defaultPassword = await hashPassword("123456")
@@ -81,4 +83,4 @@ const getALlRoles = async () => {
 
 }
 
-export { handleCreateUser, getALlUsers, handleDeleteUser, getUserById, handleUpdateUserById, getALlRoles, hashPassword }
+export { handleCreateUser, getALlUsers, handleDeleteUser, getUserById, handleUpdateUserById, getALlRoles, hashPassword, comparePassword }

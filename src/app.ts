@@ -3,6 +3,8 @@ import 'dotenv/config';
 import webRouters from "./routers/web";
 // import getConnection from "./config/config";
 import initDatabase from "./config/seed";
+import passport from "passport";
+import configPassportLocal from "./middleware/passportLocal";
 
 const app = express();
 const PORT = process.env.PORT || 1080;
@@ -14,7 +16,11 @@ app.set('views', __dirname + '/views')
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // config static files ( image , css ,js )
-app.use(express.static('public'))
+app.use(express.static('public')) ;
+
+// config passport
+app.use(passport.initialize()) ;
+configPassportLocal(  )
 
 // config routers
 webRouters(app);
@@ -22,7 +28,10 @@ webRouters(app);
 // seeding data 
 initDatabase()
 
-
+// handle 404 not found (middleware)
+app.use((req , res) => {
+  res.send("404 Not Found")
+})
 
 app.listen(PORT, () => {
   console.log(`lang nghe tai ssss http://localhost:${PORT}`)

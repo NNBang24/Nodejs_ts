@@ -1,6 +1,7 @@
 import { prisma } from "src/config/client"
-import { hashPassword } from "../userServices"
+import { comparePassword, hashPassword } from "../userServices"
 import { ACCOUNT_TYPE } from "src/config/constant"
+import { compare } from "bcrypt"
 
 const isEmailExist = async (email: string) => {
     const user = await prisma.user.findUnique({
@@ -8,10 +9,10 @@ const isEmailExist = async (email: string) => {
             username: email
         }
     })
-    if(user) {
+    if (user) {
         return true
     }
-    return false 
+    return false
 }
 const registerNewUser = async (
     fullname: string,
@@ -39,6 +40,6 @@ const registerNewUser = async (
         throw new Error("User Role khong ton tai ");
     }
 }
+
 export {
-    isEmailExist, registerNewUser
-}
+    isEmailExist, registerNewUser }
