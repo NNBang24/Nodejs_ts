@@ -1,5 +1,6 @@
+import { time } from "console";
 import { Request, Response } from "express";
-import { addProductToCart, getProductById } from "src/services/client/itemServices";
+import { addProductToCart, getProductById, getProductInCart } from "src/services/client/itemServices";
 
 const getProductPage =async( req : Request , res : Response) => {
     const {id} = req.params ; 
@@ -18,11 +19,18 @@ const postAddProductToCart = async (req: Request, res: Response) => {
     return res.redirect('/')
 }
 const getCartPage = async (req: Request, res: Response) => {
+    const {id} = req.query
     const user = req.user ;
     if(!user) {
         return res.redirect('/login')
     }
-    return res.render('client/product/cart')
+   const cartDetails = await getProductInCart(+user.id) ;
+   const totalPrice = cartDetails?.map((item) =>{
+    return +item.price * +item.quantity ;
+   })?.reduce((a,b) =>{
+    return a + b
+   },0)
+    return res.render('client/product/cart' ,{cartDetails , totalPrice})
 
 }
 export {
