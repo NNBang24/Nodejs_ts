@@ -44,7 +44,7 @@ const addProductToCart = async (quantity: number, productId: number, user: Expre
         })
         await prisma.cartDetail.upsert({
             where: {
-                id : currentCartDetail?.id?? 0
+                id: currentCartDetail?.id ?? 0
 
             },
             update: {
@@ -79,28 +79,55 @@ const addProductToCart = async (quantity: number, productId: number, user: Expre
     }
 }
 
-const getProductInCart = async (userId : number) => {
-   const cart = await prisma.cart.findUnique({
-    where : {
-        userId
-    }
-   })
-   if(cart) {
+const getProductInCart = async (userId: number) => {
+    const cart = await prisma.cart.findUnique({
+        where: {
+            userId
+        }
+    })
+    if (cart) {
         const currentCartDetail = await prisma.cartDetail.findMany({
-            where :{
-                cartId : cart.id
-            } ,
-            include:{
-                product : true
+            where: {
+                cartId: cart.id
+            },
+            include: {
+                product: true
             }
         })
         return currentCartDetail
-   }
-   return [] ;
+    }
+    return [];
 }
+const deleteProductInCart = async (cartDetailId: number, userId: number, sumCart: number) => {
+    //xóa cart-detail
+    await prisma.cartDetail.delete({
+        where: { id: cartDetailId }
+    })
+
+
+    if (sumCart === 1) {
+        //delete cart
+        await prisma.cart.delete({
+            where: { userId }
+        })
+    } else {
+        //update cart
+        await prisma.cart.update({
+            where: { userId },
+            data: {
+                sum: {
+                    decrement: 1,
+                }
+            }
+        })
+    }
+
+}
+
 export {
     getProducts,
     getProductById,
-    addProductToCart ,
-    getProductInCart
+    addProductToCart,
+    getProductInCart,
+    deleteProductInCart
 }

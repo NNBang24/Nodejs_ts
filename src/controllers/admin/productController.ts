@@ -1,29 +1,30 @@
 import { Request, Response } from "express";
 import { createProduct, getProductById, getProductList, handleDeleteProduct, updateProductById } from "src/services/admin/productServices";
+import {  deleteProductInCart } from "src/services/client/itemServices";
 import { ProductSchema, TProductSchema } from "src/validation/productSchema";
 
-const getAminCreateProductPage =async( req : Request , res : Response) => {
-    const errors = [] ;
+const getAminCreateProductPage = async (req: Request, res: Response) => {
+    const errors = [];
     const oldData = {
-        name : '' ,
-        price : '' ,
-        detailDesc : '' ,
-        shortDesc : '' ,
-        quantity : '' ,
-        factory : '' ,
-        target : ''
+        name: '',
+        price: '',
+        detailDesc: '',
+        shortDesc: '',
+        quantity: '',
+        factory: '',
+        target: ''
     }
-    return res.render("admin/product/create" ,{
-        errors ,oldData
+    return res.render("admin/product/create", {
+        errors, oldData
     })
 }
 const postAminCreateProduct = async (req: Request, res: Response) => {
-    const {name ,price , detailDesc , shortDesc , quantity , factory , target} = req.body as TProductSchema ;
+    const { name, price, detailDesc, shortDesc, quantity, factory, target } = req.body as TProductSchema;
     const validate = ProductSchema.safeParse(req.body);
-    if(!validate.success) {
+    if (!validate.success) {
         // error
-        const errorsZod = validate.error.issues ;
-        const errors = errorsZod?.map(item => `${item.message} (${item.path[0]})`) ;
+        const errorsZod = validate.error.issues;
+        const errors = errorsZod?.map(item => `${item.message} (${item.path[0]})`);
         const oldData = {
             name: name,
             price: price,
@@ -33,28 +34,28 @@ const postAminCreateProduct = async (req: Request, res: Response) => {
             factory: factory,
             target: target
         }
-        return res.render("admin/product/create",{errors , oldData})
+        return res.render("admin/product/create", { errors, oldData })
     }
     //success , create a new product 
 
     const image = req?.file?.filename ?? null
 
     await createProduct(
-        name, +price, detailDesc, shortDesc, +quantity, factory, target , image
+        name, +price, detailDesc, shortDesc, +quantity, factory, target, image
     )
- 
+
     return res.redirect("/admin/product")
 }
 
 const postDeleteProduct = async (req: Request, res: Response) => {
-    const {id} = req.params ;
-    await handleDeleteProduct(id) ;
+    const { id } = req.params;
+    await handleDeleteProduct(id);
     return res.redirect('/admin/product')
 }
 
 const getViewProduct = async (req: Request, res: Response) => {
-    const {id} = req.params ;
-    const product = await getProductById(id) 
+    const { id } = req.params;
+    const product = await getProductById(id)
     const factoryOptions = [
         { name: "Apple (MacBook)", value: "APPLE" },
         { name: "Asus", value: "ASUS" },
@@ -70,25 +71,38 @@ const getViewProduct = async (req: Request, res: Response) => {
         { name: "Mỏng nhẹ", value: "MONG-NHE" },
         { name: "Doanh nhân", value: "DOANH-NHAN" },
     ];
-    return res.render("admin/product/detail" ,{
-        product , 
-        factoryOptions , 
-        targetOptions ,
+    return res.render("admin/product/detail", {
+        product,
+        factoryOptions,
+        targetOptions,
         errors: []
     })
 }
-const postUpdateProduct = async (req: Request, res: Response) =>{
-    const { id ,name, price, detailDesc, shortDesc, quantity, factory, target } = req.body as TProductSchema;
+const postUpdateProduct = async (req: Request, res: Response) => {
+    const { id, name, price, detailDesc, shortDesc, quantity, factory, target } = req.body as TProductSchema;
     const image = req?.file?.filename ?? null
-    await updateProductById (
-       +id, name, +price, detailDesc, shortDesc, +quantity, factory, target, image
+    await updateProductById(
+        +id, name, +price, detailDesc, shortDesc, +quantity, factory, target, image
     )
     return res.redirect("/admin/product")
 }
+const postDeleteProductInCart = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const user = req.user;
+
+    if (user) {
+        await deleteProductInCart(+id, user.id, user.sumCart);
+    } else {
+        return res.redirect("/login");
+    }
+
+    return res.redirect("/cart");
+}
 export {
-    getAminCreateProductPage ,
-    postAminCreateProduct ,
-    postDeleteProduct ,
-     getViewProduct,
-    postUpdateProduct
+    getAminCreateProductPage,
+    postAminCreateProduct,
+    postDeleteProduct,
+    getViewProduct,
+    postUpdateProduct,
+    postDeleteProductInCart
 }
