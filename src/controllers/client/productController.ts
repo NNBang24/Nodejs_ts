@@ -1,6 +1,6 @@
 import { time } from "console";
 import { Request, Response } from "express";
-import { addProductToCart, getProductById, getProductInCart, updateCartDetailBeforeCheckout } from "src/services/client/itemServices";
+import { addProductToCart, getProductById, getProductInCart, updateCartDetailBeforeCheckout ,handlePlaceOrder } from "src/services/client/itemServices";
 
 const getProductPage =async( req : Request , res : Response) => {
     const {id} = req.params ; 
@@ -54,7 +54,18 @@ const postHandleCartToCheckout = async (req: Request, res: Response) => {
     await updateCartDetailBeforeCheckout(currentCartDetail)
         return res.redirect('/checkout')
 }
-
+const postPlaceOrder = async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) return res.redirect('/login');
+    const { receiverName, receiverAddress, receiverPhone ,totalPrice} = req.body
+    await handlePlaceOrder(user.id, receiverName, receiverAddress, receiverPhone ,+totalPrice)
+    return res.redirect('/thanks')
+}
+const postThanksPage = async (req: Request, res: Response) => {
+    const user = req.user;
+    if (!user) return res.redirect('/login');
+    return res.render('client/product/thanks')
+}
 export {
-    getProductPage ,postAddProductToCart , getCartPage , getCheckOutPage , postHandleCartToCheckout
+    getProductPage ,postAddProductToCart , getCartPage , getCheckOutPage , postHandleCartToCheckout ,postPlaceOrder ,postThanksPage
 }

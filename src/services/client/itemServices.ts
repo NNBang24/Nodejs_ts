@@ -1,3 +1,4 @@
+import { pid } from "process";
 import { prisma } from "src/config/client"
 
 const getProducts = async () => {
@@ -123,17 +124,67 @@ const deleteProductInCart = async (cartDetailId: number, userId: number, sumCart
     }
 
 }
-const updateCartDetailBeforeCheckout = async (data: { id: string, quantity: string  } []) =>{
-    for(let i = 0 ; i< data.length ; i++) {
+const updateCartDetailBeforeCheckout = async (data: { id: string, quantity: string }[]) => {
+    for (let i = 0; i < data.length; i++) {
         await prisma.cartDetail.update({
-            where :{
-                id :+data[i].id
+            where: {
+                id: +data[i].id
             },
-            data :{
-                quantity : +data[i].quantity
+            data: {
+                quantity: +data[i].quantity
             }
         })
     }
+}
+const handlePlaceOrder = async (
+    userId: number,
+    receiverName: string,
+    receiverAddress: string,
+    receiverPhone: string,
+    totalPrice : number
+) => {
+    const cart = await prisma.cart.findUnique({
+        where: {
+            userId
+        },
+        include: {
+            cartDetails: true
+        }
+    })
+    if (cart) {
+        const dataOrderDetail = cart?.cartDetails?.map( item => ({
+            price : item.price ,
+            quantity : item.quantity ,
+            productId : item.productId
+        })
+    ) ?? []
+        await prisma.order.create({
+            data: {
+                receiverName,
+                receiverAddress,
+                receiverPhone,
+                paymentMethod: "COD",
+                paymentStatus: "PAYMENT_UNPAID",
+                status: "PENDING",
+                totalPrice: totalPrice,
+                userId,
+                orderDetails : {
+                    create : dataOrderDetail
+                }
+            }
+        })
+        // remove cart detail + cart
+        await prisma.cartDetail.deleteMany({
+            where :{
+                cartId : cart.id
+            }
+        })
+        // remove cart
+        await prisma.cart.delete({
+            where : {id : cart.id}
+        })
+    }
+
 }
 
 export {
@@ -141,6 +192,7 @@ export {
     getProductById,
     addProductToCart,
     getProductInCart,
-    deleteProductInCart ,
-    updateCartDetailBeforeCheckout
+    deleteProductInCart,
+    updateCartDetailBeforeCheckout,
+    handlePlaceOrder
 }
