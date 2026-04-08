@@ -1,5 +1,6 @@
 import { pid } from "process";
 import { prisma } from "src/config/client"
+import { never } from "zod";
 
 const getProducts = async () => {
     const products = await prisma.product.findMany();
@@ -18,33 +19,33 @@ const addProductToCart = async (quantity: number, productId: number, user: Expre
     });
 
     if (!product) {
-        throw new Error("Product not found"); 
+        throw new Error("Product not found");
     }
 
-  
+
     const cart = await prisma.cart.findUnique({
         where: { userId: user.id },
-        include: { cartDetails: true } 
+        include: { cartDetails: true }
     });
 
     if (cart) {
-        
+
         await prisma.cart.update({
             where: { id: cart.id },
             data: { sum: { increment: quantity } },
         });
 
-      
+
         const currentCartDetail = cart.cartDetails.find(cd => cd.productId === productId);
 
         if (currentCartDetail) {
-         
+
             await prisma.cartDetail.update({
                 where: { id: currentCartDetail.id },
                 data: { quantity: { increment: quantity } },
             });
         } else {
-           
+
             await prisma.cartDetail.create({
                 data: {
                     price: product.price,
@@ -55,7 +56,7 @@ const addProductToCart = async (quantity: number, productId: number, user: Expre
             });
         }
     } else {
-      
+
         await prisma.cart.create({
             data: {
                 sum: quantity,
@@ -97,20 +98,20 @@ const deleteProductInCart = async (
     sumCart: number
 ) => {
     const currentCartDetail = await prisma.cartDetail.findUnique({
-        where : {id : cartDetailId}
+        where: { id: cartDetailId }
     })
     const quantity = currentCartDetail?.quantity
     // xóa cartDetail
     await prisma.cartDetail.delete({ where: { id: cartDetailId } });
 
     if (sumCart === 1) {
-       
+
         await prisma.cart.delete({ where: { userId } });
     } else {
-      
+
         await prisma.cart.update({
             where: { userId },
-            data: { sum: { decrement:quantity} }, //tru so luong
+            data: { sum: { decrement: quantity } }, //tru so luong
         });
     }
 };
@@ -131,49 +132,88 @@ const handlePlaceOrder = async (
     receiverName: string,
     receiverAddress: string,
     receiverPhone: string,
-    totalPrice : number
+    totalPrice: number
 ) => {
-    const cart = await prisma.cart.findUnique({
-        where: {
-            userId
-        },
-        include: {
-            cartDetails: true
-        }
-    })
-    if (cart) {
-        const dataOrderDetail = cart?.cartDetails?.map( item => ({
-            price : item.price ,
-            quantity : item.quantity ,
-            productId : item.productId
-        })
-    ) ?? []
-        await prisma.order.create({
-            data: {
-                receiverName,
-                receiverAddress,
-                receiverPhone,
-                paymentMethod: "COD",
-                paymentStatus: "PAYMENT_UNPAID",
-                status: "PENDING",
-                totalPrice: totalPrice,
-                userId,
-                orderDetails : {
-                    create : dataOrderDetail
+
+
+    try {
+        // tao transaction 
+      await  prisma.$transaction(async (tx) => {
+            const cart = await tx.cart.findUnique({
+                where: {
+                    userId
+                },
+                include: {
+                    cartDetails: true
+                }
+            })
+            if (cart) {
+
+                const dataOrderDetail = cart?.cartDetails?.map(item => ({
+                    price: item.price,
+                    quantity: item.quantity,
+                    productId: item.productId
+                })
+                ) ?? []
+                await tx.order.create({
+                    data: {
+                        receiverName,
+                        receiverAddress,
+                        receiverPhone,
+                        paymentMethod: "COD",
+                        paymentStatus: "PAYMENT_UNPAID",
+                        status: "PENDING",
+                        totalPrice: totalPrice,
+                        userId,
+                        orderDetails: {
+                            create: dataOrderDetail
+                        }
+                    }
+                })
+                // remove cart detail + cart
+                await tx.cartDetail.deleteMany({
+                    where: {
+                        cartId: cart.id
+                    }
+                })
+                // remove cart
+                await tx.cart.delete({
+                    where: { id: cart.id }
+                })
+                //check product
+                for (let i = 0; i < cart.cartDetails.length; i++) {
+                    const productId = cart.cartDetails[i].productId;
+                    const product = await tx.product.findUnique({
+                        where: {
+                            id: productId
+                        }
+                    })
+                    if (!product || product.quantity < cart.cartDetails[i].quantity) {
+                        throw new Error(`san pham ${product?.name} khong hoan tai hoac khong du so luong`)
+                    }
+                    await tx.product.update({
+                        where: {
+                            id: productId
+                        },
+                        data: {
+                            quantity: {
+                                decrement: cart.cartDetails[i].quantity,
+                            },
+                            sold: {
+                                increment: cart.cartDetails[i].quantity
+                            }
+                        }
+                    })
                 }
             }
         })
-        // remove cart detail + cart
-        await prisma.cartDetail.deleteMany({
-            where :{
-                cartId : cart.id
-            }
-        })
-        // remove cart
-        await prisma.cart.delete({
-            where : {id : cart.id}
-        })
+        return ''
+    } catch (error) {
+        if (error instanceof Error) {
+            console.log(error.message);
+        }
     }
+
 
 }
 const getOrderHistory = async (userId: number) => {
@@ -195,6 +235,6 @@ export {
     getProductInCart,
     deleteProductInCart,
     updateCartDetailBeforeCheckout,
-    handlePlaceOrder ,
+    handlePlaceOrder,
     getOrderHistory
 }
